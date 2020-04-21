@@ -122,7 +122,8 @@
     (define ((make-for/stream derived-stx) stx)
       (syntax-case stx ()
         [(_ clauses . body)
-         (with-syntax ([((pre-body ...) (post-body ...)) (f:split-for-body stx #'body)])
+         (with-syntax ([((pre-body ...) (post-body ...))
+                        (f:split-for-body stx #'body)])
            (quasisyntax/loc stx
              (#,derived-stx #,stx
                             ([get-rest empty-stream]
@@ -156,6 +157,8 @@
     (check-equal? x 1)
     (r:stream-first (r:stream-rest s))
     (check-equal? x 2)
+    (r:stream-first (r:stream-rest s))
+    (check-equal? x 2)
 
     (define y 0)
     (define t (for/stream/values ([_ 5]) (set! y (add1 y))))
@@ -167,36 +170,37 @@
     (r:stream-rest t)
     (check-equal? y 1)
     (r:stream-first (r:stream-rest t))
+    (check-equal? y 2)
+    (r:stream-first (r:stream-rest t))
     (check-equal? y 2)))
 
 (define-syntax stream/values
   (syntax-rules ()
-    ((_)
-     empty-stream)
-    ((_ hd tl ...)
-     (stream-cons/values hd (stream/values tl ...)))))
+    ((_) empty-stream)
+    ((_ hd tl ...) (stream-cons/values hd (stream/values tl ...)))))
 
 (define-syntax stream*/values
   (syntax-rules ()
-    [(_ tl)
-     (assert-stream? 'stream*/values tl)]
-    [(_ hd tl ...)
-     (stream-cons/values hd (stream*/values tl ...))]))
+    [(_ tl) (assert-stream? 'stream*/values tl)]
+    [(_ hd tl ...) (stream-cons/values hd (stream*/values tl ...))]))
 
 (module+ test
   (test-case "stream"
     (check-equal? (sequence->list (in-values-sequence (r:stream 1 2 3)))
                   '((1) (2) (3)))
-    (check-equal? (sequence->list (in-values-sequence (stream/values (values 1 2) (values 2 3) (values 3 4))))
+    (check-equal? (sequence->list (in-values-sequence (stream/values (values 1 2)
+                                                                     (values 2 3)
+                                                                     (values 3 4))))
                   '((1 2) (2 3) (3 4))))
 
   (test-case "stream*"
     (check-equal? (for/list ([x (r:stream* -2 -1 (in-naturals))] [_ 5]) x)
                   '(-2 -1 0 1 2))
-    (check-equal? (for/list ([(a b) (stream*/values (values -2 -1)
-                                                (values -1 0)
-                                                (for/stream/values ([x (in-naturals)])
-                                                  (values x (add1 x))))]
+    (check-equal? (for/list ([(a b)
+                              (stream*/values (values -2 -1)
+                                              (values -1 0)
+                                              (for/stream/values ([x (in-naturals)])
+                                                (values x (add1 x))))]
                              [_ 5])
                     (list a b))
                   '((-2 -1) (-1 0) (0 1) (1 2) (2 3)))))

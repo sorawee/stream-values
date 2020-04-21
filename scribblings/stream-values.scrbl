@@ -38,3 +38,5 @@ This library allows manipulation of multiple values in @tech[#:doc '(lib "scribb
   ]
 }
 
+Note that to support stream memoization, these operations need to convert
+multiple values into a list first, which will inevitably cost the performance.
