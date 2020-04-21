@@ -22,7 +22,7 @@ This library allows manipulation of multiple values in @tech[#:doc '(lib "scribb
               @defform[(for/stream/values (for-clause ...) body-or-break ... body)]
               @defform[(for*/stream/values (for-clause ...) body-or-break ... body)])]{
   Like @racket[stream-cons], @racket[stream], @racket[stream*], @racket[for/stream],
-  and @racket[for*/stream], but they support multiple values.
+  and @racket[for*/stream], but they support @tech[#:doc '(lib "scribblings/reference/reference.scrbl")]{multiple values}.
 
   @examples[#:eval sequence-evaluator
     (define s (stream-cons/values (values 1 2) empty-stream))
