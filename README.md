@@ -1,2 +1,2 @@
 # stream-values
-A library that allows manipulation of multiple values in Racket streams
+A library for multiple values manipulation in Racket streams
