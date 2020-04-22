@@ -89,10 +89,13 @@ This library allows manipulation of multiple values in
     (for ([_ (in-stream zs)]) (void))
     (code:comment @#,t{This iteration should not display any element because the stream is fully memoized.})
     (for ([_ (unsafe-in-stream zs)]) (void))
-    (code:comment @#,t{Though the performance is worse than @racket[in-stream].})
+  ]
+
+  @examples[#:eval sequence-evaluator #:label #f
+    (code:comment @#,t{Performance of @racket[in-stream] vs @racket[unsafe-in-stream] on fully memoized stream.})
     (define w (for/stream/values ([i (in-range 1000000)]) (values i (add1 i))))
-    (code:comment @#,t{Fully memoize @racket[w].})
-    (time (for ([(a b) (in-stream w)]) (void)))
+    (code:comment @#,t{Fully memoize @racket[w] first.})
+    (for ([(a b) (in-stream w)]) (void))
     (time (for ([(a b) (in-stream w)]) (void)))
     (time (for ([(a b) (unsafe-in-stream w)]) (void)))
   ]
