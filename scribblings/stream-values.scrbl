@@ -54,11 +54,9 @@ This library allows manipulation of multiple values in
   appears directly in a @racket[for] clause. It is @emph{unsafe} in a sense that
   stream memoization (which is a feature of Racket streams) is @emph{not guaranteed}.
   That is, for each element in the stream, an iteration via @racket[unsafe-in-stream]
-  might or might not memoize the element.
-  Moreover, if a stream is previously memoized, @racket[unsafe-in-stream] does
-  @emph{not guarantee} that it will use the memoized result.
-  @;{However, it does guarantee that if a stream
-  is @emph{fully} memoized, iterating on the stream will use the memoized result.}
+  might or might not memoize the element. However, it does guarantee that if a stream
+  is @emph{fully} memoized, iterating on the stream will use the memoized result, though
+  in this case, @racket[in-stream] will provide a better performance.
 
   This procedure is useful when a stream is used in the iteration only once and then
   discarded, since memoization does not matter and the iteration could be
@@ -68,30 +66,34 @@ This library allows manipulation of multiple values in
 
   @for-element-reachability["stream"]
   @examples[#:eval sequence-evaluator
-    (code:comment @#,elem{Performance gain compare to @racket[in-stream]})
-    (define s (for/stream/values ([i (in-range 10000000)]) (values i (add1 i))))
+    (code:comment @#,t{Performance of @racket[in-stream] vs @racket[unsafe-in-stream]})
+    (define s (for/stream/values ([i (in-range 1000000)]) (values i (add1 i))))
     (time (for ([(a b) (in-stream s)]) (void)))
-    (time (for ([(a b) (unsafe-in-stream s)]) (void)))
-    code:blank
-    code:blank
-    (code:comment @#,elem{Lack of memoization})
+    (define t (for/stream/values ([i (in-range 1000000)]) (values i (add1 i))))
+    (time (for ([(a b) (unsafe-in-stream t)]) (void)))
+  ]
+  @examples[#:eval sequence-evaluator #:label #f
+    (code:comment @#,t{Lack of memoization})
     (define xs (for/stream/values ([i (in-range 5)]) (displayln i)))
     (for ([_ (in-stream xs)]) (void))
-    (code:comment @#,elem{This iteration should not display any element because the stream is memoized.})
+    (code:comment @#,t{This iteration should not display any element because the stream is memoized.})
     (for ([_ (in-stream xs)]) (void))
     (define ys (for/stream/values ([i (in-range 5)]) (displayln i)))
     (for ([_ (unsafe-in-stream ys)]) (void))
-    (code:comment @#,elem{Due to the lack of memoization, this iteration displays elements again.})
+    (code:comment @#,t{Due to the lack of memoization, this iteration displays elements again.})
     (for ([_ (unsafe-in-stream ys)]) (void))
   ]
-}
-
-@;{
-code:blank
-code:blank
-(code:comment @#,elem{Fully memoization stream is utilized})
-(define zs (for/stream/values ([i (in-range 5)]) (displayln i)))
-(for ([_ (in-stream zs)]) (void))
-(code:comment @#,elem{This iteration should not display any element because the stream is fully memoized.})
-(for ([_ (unsafe-in-stream zs)]) (void))
+  @examples[#:eval sequence-evaluator #:label #f
+    (code:comment @#,t{Fully memoization stream is utilized})
+    (define zs (for/stream/values ([i (in-range 5)]) (displayln i)))
+    (for ([_ (in-stream zs)]) (void))
+    (code:comment @#,t{This iteration should not display any element because the stream is fully memoized.})
+    (for ([_ (unsafe-in-stream zs)]) (void))
+    (code:comment @#,t{Though the performance is worse than @racket[in-stream].})
+    (define w (for/stream/values ([i (in-range 1000000)]) (values i (add1 i))))
+    (code:comment @#,t{Fully memoize @racket[w].})
+    (time (for ([(a b) (in-stream w)]) (void)))
+    (time (for ([(a b) (in-stream w)]) (void)))
+    (time (for ([(a b) (unsafe-in-stream w)]) (void)))
+  ]
 }

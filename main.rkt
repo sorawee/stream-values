@@ -3,7 +3,6 @@
 (provide stream-cons/values for/stream/values for*/stream/values
          stream/values stream*/values unsafe-in-stream)
 (require syntax/parse/define
-         (only-in racket/private/stream-cons stream-lazy)
          (only-in racket/private/for split-for-body)
          (prefix-in r: racket))
 
@@ -19,8 +18,9 @@
   #:methods gen:stream
   [(define (stream-empty? self) #f)
    (define (stream-first self)
+     (define evaled (stream-fst-evaled self))
      (cond
-       [(stream-fst-evaled self) => (curry apply values)]
+       [evaled (apply values evaled)]
        [else
         (define xs (call-with-values (stream-fst-thunk self) list))
         (set-stream-fst-evaled! self xs)
@@ -28,9 +28,23 @@
    (define (stream-rest self)
      (cond
        [(stream-rst-evaled self)]
-       [else (define s (stream-lazy ((stream-rst-thunk self))))
+       [else (define s (stream-wrapper (stream-rst-thunk self) #f))
              (set-stream-rst-evaled! self s)
              s]))])
+
+(struct stream-wrapper (s evaled?)
+  #:mutable
+  #:methods gen:stream
+  [(define (force self)
+     (cond
+       [(stream-wrapper-evaled? self) (stream-wrapper-s self)]
+       [else (define result ((stream-wrapper-s self)))
+             (set-stream-wrapper-s! self result)
+             (set-stream-wrapper-evaled?! self #t)
+             result]))
+   (define (stream-empty? self) (r:stream-empty? (force self)))
+   (define (stream-first self) (r:stream-first (force self)))
+   (define (stream-rest self) (r:stream-rest (force self)))])
 
 (define-syntax-rule (stream-cons/values fst rst)
   (stream (thunk fst) #f (thunk rst) #f))
@@ -90,7 +104,7 @@
   (test-case "stream-cons: error"
     (check-exn #px"rest expression produced a non-stream"
                (thunk (r:stream-first (r:stream-rest (r:stream-cons 0 1)))))
-    (check-exn #px"rest expression produced a non-stream"
+    (check-exn #px"expected: stream?"
                (thunk (r:stream-first (r:stream-rest (stream-cons/values 0 1))))))
 
   (test-case "stream-cons: for"
@@ -229,15 +243,17 @@
          (void)
          ([current the-stream])
          (stream-not-empty? current)
-         ([(iter ...) (if (stream? current)
-                          ((stream-fst-thunk current))
-                          #;(cond
-                            [(stream-fst-evaled current) => (curry apply values)]
-                            [else ((stream-fst-thunk current))])
-                          (r:stream-first current))]
+         ([(iter ...) (cond
+                        [(stream? current)
+                         #;((stream-fst-thunk current))
+                         (define evaled (stream-fst-evaled current))
+                         (cond
+                           [evaled (apply values evaled)]
+                           [else ((stream-fst-thunk current))])]
+                        [else (r:stream-first current)])]
           [(rst) (if (stream? current)
-                     ((stream-rst-thunk current))
-                     #;(or (stream-rst-evaled current) ((stream-rst-thunk current)))
+                     #;((stream-rst-thunk current))
+                     (or (stream-rst-evaled current) ((stream-rst-thunk current)))
                      (r:stream-rest current))])
          #t
          #t
@@ -280,7 +296,7 @@
     (for ([_ (unsafe-in-stream t)]) (void))
     (check-equal? y 4))
 
-  #;(test-case "unsafe-in-stream: guarantee read memoize"
+  (test-case "unsafe-in-stream: guarantee read memoize"
     (define y 0)
     (define t (stream*/values (set! y (add1 y)) (r:stream (set! y (add1 y)))))
     (for ([_ (in-stream t)]) (void))
