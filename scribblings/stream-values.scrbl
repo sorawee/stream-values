@@ -1,5 +1,6 @@
 #lang scribble/manual
 @require[scribble/example
+         racket/function
          @for-label[stream-values
                     racket/base
                     racket/stream]]
@@ -14,13 +15,16 @@
    @elem{See @racket[for] for information on the reachability of @|what| elements
          during an iteration.})
 
+@(define tech-ref (curry tech #:doc '(lib "scribblings/reference/reference.scrbl")))
+
 @title{stream-values}
 @author+email["Sorawee Porncharoenwase" "sorawee.pwase@gmail.com"]
 
 @defmodule[stream-values]
 
-This library allows manipulation of multiple values in
-@tech[#:doc '(lib "scribblings/reference/reference.scrbl")]{streams}.
+This library allows manipulation of @tech-ref{multiple values} in @tech-ref{streams}.
+The @racket[for/stream/values] form, in particular, could be used to construct a
+relatively efficient @tech-ref{sequence} of multiple values in the traditional (3m) variant of Racket (as @tech-ref{generators} are highly inefficient in this variant).
 
 @deftogether[(@defform[(stream-cons/values first-expr rest-expr)]
               @defform[(stream/values expr ...)]
@@ -28,8 +32,7 @@ This library allows manipulation of multiple values in
               @defform[(for/stream/values (for-clause ...) body-or-break ... body)]
               @defform[(for*/stream/values (for-clause ...) body-or-break ... body)])]{
   Like @racket[stream-cons], @racket[stream], @racket[stream*], @racket[for/stream],
-  and @racket[for*/stream], but they support
-  @tech[#:doc '(lib "scribblings/reference/reference.scrbl")]{multiple values}.
+  and @racket[for*/stream], but they support multiple values.
 
   @examples[#:eval sequence-evaluator
     (define s (stream-cons/values (values 1 2) empty-stream))
@@ -46,9 +49,8 @@ This library allows manipulation of multiple values in
 }
 
 @defproc[(unsafe-in-stream [s stream?]) sequence?]{
-  Similar to @racket[in-stream] (which supports
-  @tech[#:doc '(lib "scribblings/reference/reference.scrbl")]{multiple values}
-  already), but it cooperates with this library so that an
+  Similar to @racket[in-stream] (which supports multiple values already),
+  but it cooperates with this library so that an
   @racket[unsafe-in-stream] application can provide better performance for iteration
   on streams (that are constructed via this library) when @racket[unsafe-in-stream]
   appears directly in a @racket[for] clause. It is @emph{unsafe} in a sense that
