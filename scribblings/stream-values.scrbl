@@ -24,7 +24,7 @@
 
 This library allows manipulation of @tech-ref{multiple values} in @tech-ref{streams}.
 The @racket[for/stream/values] form, in particular, could be used to construct a
-relatively efficient @tech-ref{sequence} of multiple values in the traditional (3m) variant of Racket (as @tech-ref{generators} are highly inefficient in this variant).
+relatively efficient @tech-ref{sequence} of multiple values in the @tech[#:key "3m" #:doc '(lib "scribblings/guide/guide.scrbl")]{traditional (3m) variant} of Racket (as @tech-ref{generators} are highly inefficient in this variant).
 
 @deftogether[(@defform[(stream-cons/values first-expr rest-expr)]
               @defform[(stream/values expr ...)]
