@@ -18,7 +18,7 @@
 @(define tech-ref (curry tech #:doc '(lib "scribblings/reference/reference.scrbl")))
 
 @title{stream-values}
-@author+email["Sorawee Porncharoenwase" "sorawee.pwase@gmail.com"]
+@author[@author+email["Sorawee Porncharoenwase" "sorawee.pwase@gmail.com"]]
 
 @defmodule[stream-values]
 
