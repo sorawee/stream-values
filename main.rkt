@@ -3,7 +3,7 @@
 (provide stream-cons/values for/stream/values for*/stream/values
          stream/values stream*/values unsafe-in-stream)
 (require syntax/parse/define
-         (only-in racket/private/for split-for-body)
+         (for-syntax syntax/for-body)
          (prefix-in r: racket))
 
 (module+ test
