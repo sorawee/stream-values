@@ -69,9 +69,9 @@ relatively efficient @tech-ref{sequence} of multiple values in the @tech[#:key "
   @for-element-reachability["stream"]
   @examples[#:eval sequence-evaluator
     (code:comment @#,t{Performance of @racket[in-stream] vs @racket[unsafe-in-stream]})
-    (define s (for/stream/values ([i (in-range 1000000)]) (values i (add1 i))))
+    (define s (for/stream/values ([i (in-range 100000)]) (values i (add1 i))))
     (time (for ([(a b) (in-stream s)]) (void)))
-    (define t (for/stream/values ([i (in-range 1000000)]) (values i (add1 i))))
+    (define t (for/stream/values ([i (in-range 100000)]) (values i (add1 i))))
     (time (for ([(a b) (unsafe-in-stream t)]) (void)))
   ]
   @examples[#:eval sequence-evaluator #:label #f
@@ -95,7 +95,7 @@ relatively efficient @tech-ref{sequence} of multiple values in the @tech[#:key "
 
   @examples[#:eval sequence-evaluator #:label #f
     (code:comment @#,t{Performance of @racket[in-stream] vs @racket[unsafe-in-stream] on fully memoized stream.})
-    (define w (for/stream/values ([i (in-range 1000000)]) (values i (add1 i))))
+    (define w (for/stream/values ([i (in-range 100000)]) (values i (add1 i))))
     (code:comment @#,t{Fully memoize @racket[w] first.})
     (for ([(a b) (in-stream w)]) (void))
     (time (for ([(a b) (in-stream w)]) (void)))
